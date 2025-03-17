@@ -1,0 +1,135 @@
+﻿@page "/"
+@page "/mantenimiento"
+@rendermode InteractiveServer
+@inject AppDbContext db
+
+<PageTitle>Mantenimiento</PageTitle>
+
+<h1>Mantenimiento de detenciones</h1>
+
+@if(modo == Modo.Lista){
+
+    <h3>Listado de detenciones</h3>
+    <div class="text-end">
+        <button class="btn btn-primary" @onclick="()=>modo = Modo.Editar">Agregar</button>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Nombre</th>
+                <th>Coordenadas</th>
+            </tr>
+        </thead>
+        <tbody> 
+            @foreach (var detencion in detenciones)
+            {
+                <tr>
+                    <td>@detencion.FechaDetencion</td>
+                    <td>@detencion.Nombre @detencion.Apellido</td>
+                    <td>@detencion.Coordenadas()</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="()=>EditarDetencion(detencion)">Editar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+}else if(modo == Modo.Editar){
+    <EditForm Model="@detencion" OnInvalidSubmit="GuardarDetencion">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+
+    <div class="form-group">
+        <label for="FechaDetencion">Fecha de detencion</label>
+        <InputDate id="FechaDetencion" @bind-Value="@detencion.FechaDetencion" class="form-control"/>
+        <ValidationMessage For="@(() => detencion.FechaDetencion)"/>
+    </div>
+
+    <div class="form-group">
+        <label for="Nombre">Nombre</label>
+        <InputText id="Nombre" @bind-Value="@detencion.Nombre" class="form-control"/>
+        <ValidationMessage For="@(() => detencion.Nombre)"/>
+    </div>
+    
+    <div class="form-group">
+        <label for="Apellido">Apellido</label>
+        <InputText id="Apellido" @bind-Value="@detencion.Apellido" class="form-control"/>
+        <ValidationMessage For="@(() => detencion.Apellido)"/>
+    </div>
+
+     <div class="form-group">
+        <label for="Pasaporte">Pasaporte</label>
+        <InputText id="Pasaporte" @bind-Value="@detencion.Pasaporte" class="form-control"/>
+        <ValidationMessage For="@(() => detencion.Pasaporte)"/>
+    </div>
+
+     <div class="form-group">
+        <label for="FechaNacimiento">FechaNacimiento</label>
+        <InputDate id="FechaNacimiento" @bind-Value="@detencion.FechaNacimiento" class="form-control"/>
+        <ValidationMessage For="@(() => detencion.FechaNacimiento)"/>
+    </div>
+
+    <div class="form-group">
+        <label for="Latitud">Latitud</label>
+        <InputNumber id="Latitud" @bind-Value="@detencion.Latitud" class="form-control"/>
+        <ValidationMessage For="@(() => detencion.Latitud)"/>
+    </div>
+
+    <div class="form-group">
+        <label for="Longitud">Longitud</label>
+        <InputNumber id="Longitud" @bind-Value="@detencion.Longitud" class="form-control"/>
+        <ValidationMessage For="@(() => detencion.Longitud)"/>
+    </div>
+
+    <button type="submit" class="btn btn-primary" @onclick="GuardarDetencion">Guardar</button>
+
+    </EditForm>
+}
+
+
+@code{
+
+    enum Modo{
+        Lista,
+
+        Editar
+    }
+
+    Modo modo = Modo.Lista;
+    List<Detencion> detenciones = new List<Detencion>();
+    Detencion detencion = new Detencion();
+
+
+    void GuardarDetencion(){
+       
+
+       if(detencion.Id > 0){
+
+          db.Detenciones.Update(detencion);
+          db.SaveChanges();
+
+          var index = detenciones.FindIndex(d => d.Id == detencion.Id);
+          detenciones[index] = detencion;
+
+       }else{
+            db.Detenciones.Add(detencion);
+            db.SaveChanges();
+            detenciones.Add(detencion);
+       }
+       modo = Modo.Lista;
+       StateHasChanged();
+    }
+
+    void EditarDetencion(Detencion detencion){
+        this.detencion = detencion;
+        modo = Modo.Editar;
+    }
+
+    protected override void OnInitialized()
+    {
+        detenciones = db.Detenciones.ToList();
+    }
+}

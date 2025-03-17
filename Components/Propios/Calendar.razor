@@ -1,0 +1,39 @@
+@code {
+    [Parameter]
+    public List<Detencion> Detenciones { get; set; } = new List<Detencion>();
+
+    private DateTime currentMonth = DateTime.Today;
+
+    private void PreviousMonth()
+    {
+        currentMonth = currentMonth.AddMonths(-1);
+    }
+
+    private void NextMonth()
+    {
+        currentMonth = currentMonth.AddMonths(1);
+    }
+
+    private int GetDetencionesCountByDate(DateTime date)
+    {
+        return Detenciones?.Count(d => d.FechaDetencion.Date == date.Date) ?? 0;
+    }
+}
+
+<div class="calendar">
+    <button @onclick="PreviousMonth">Anterior</button>
+    <span>@currentMonth.ToString("MMMM yyyy")</span>
+    <button @onclick="NextMonth">Siguiente</button>
+
+    <div class="calendar-grid">
+        @for (int day = 1; day <= DateTime.DaysInMonth(currentMonth.Year, currentMonth.Month); day++)
+        {
+            var date = new DateTime(currentMonth.Year, currentMonth.Month, day);
+            <div class="calendar-cell">
+                <span>@day</span>
+                <span>@GetDetencionesCountByDate(date) detenciones</span>
+            </div>
+        }
+    </div>
+</div>
+

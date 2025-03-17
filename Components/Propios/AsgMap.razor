@@ -1,0 +1,75 @@
+@rendermode InteractiveServer
+@inject IJSRuntime JSx
+ 
+@code {
+    [Parameter]
+    public List<Detencion> Detenciones { get; set; } = new List<Detencion>();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSx.InvokeVoidAsync("cargarMapa");
+
+            var parax = Newtonsoft.Json.JsonConvert.SerializeObject(Detenciones);
+
+            await JSx.InvokeVoidAsync("cargarMarcadores", parax);
+        }
+    }
+}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<style>
+    .leaflet-container {
+        height: 600px;
+        width: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        margin-top: 20%;
+    }
+</style>	
+
+<div id="map" style="width: 100%; height: 600px;"></div>
+
+<script>
+    var map = null;
+
+    function cargarMapa() {
+        map = L.map('map').setView([18.940894553319193, -70.33427366394898], 8);
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        function onMapClick(e) {
+            L.popup()
+                .setLatLng(e.latlng)
+                .setContent(`You clicked the map at ${e.latlng.toString()}`)
+                .openOn(map);
+        }
+
+        map.on('click', onMapClick);
+    }
+
+    window.onload = function() {
+        setTimeout(cargarMapa, 1000);
+    }
+
+    function cargarMarcadores(detenciones) {
+        detenciones = JSON.parse(detenciones);
+        for (var x = 0; x < detenciones.length; x++) {
+            detencion = detenciones[x];
+            L.marker([detencion.Latitud, detencion.Longitud]).addTo(map).bindPopup(`
+                <b>Nombre:</b> ${detencion.Nombre} <br>
+                <b>Apellido:</b> ${detencion.Apellido} <br>
+                <b>Pasaporte:</b> ${detencion.Pasaporte} <br>
+                <b>Fecha de nacimineto:</b> ${detencion.FechaNacimiento} <br>
+                <b>Coordenadas:</b> ${detencion.Latitud}, ${detencion.Longitud} <br>
+            
+            `);
+        }
+    }
+</script>
