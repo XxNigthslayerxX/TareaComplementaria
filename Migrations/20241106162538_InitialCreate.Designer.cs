@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Tarea7.Migrations
+namespace TareaComplementaria.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20241106162538_InitialCreate")]
